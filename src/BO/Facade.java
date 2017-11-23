@@ -187,7 +187,7 @@ public class Facade {
     }
     @GET
     @Path("messageByEmail/{email}")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public static String getUserIdByEmail(@PathParam("email") String email){
 
         return new Gson().toJson(userDb.getUserIdByEmail(email));}
@@ -202,10 +202,10 @@ public class Facade {
      */
     @POST
     @Path("createPost")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 
-    public static  String creatPost(@FormParam("content")String Content ,@FormParam("title")String title,@FormParam("date")Date date,@FormParam("creatorId")long creatorId){
+    public static  String createPost(@FormParam("content")String Content , @FormParam("title")String title, @FormParam("date")Date date, @FormParam("creatorId")long creatorId){
         Gson gson =new Gson();
         return gson.toJson(postDb.createPost(Content,title,date,creatorId));
     }
@@ -217,7 +217,7 @@ public class Facade {
      */
     @GET
     @Path("postByOwner/{id}")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public static  String getPostsByOwnerId(@PathParam("id") long id){
         Gson gson = new Gson();
         LinkedList<PostViewModel> posts = new LinkedList<>();
