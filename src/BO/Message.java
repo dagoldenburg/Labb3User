@@ -2,13 +2,15 @@ package BO;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by douglas on 11/4/17.
  */
 @Entity
 @NamedQueries({
-        @NamedQuery(name="Message.FindMessgesByRecipient",query = "Select m From Message m Where m.recipient.id= :id")
+        @NamedQuery(name="Message.FindMessgesByRecipient",query = "Select m From Message m Where m.recipient.id= :id"),
+        @NamedQuery(name="Message.FindMessgesByRecipientAndSender",query = "Select m From Message m Where m.recipient.id= :id and m.sender.id = :id2")
 })
 @Table(name = "message", schema = "SocialDb")
 
@@ -60,7 +62,7 @@ public class Message {
     public void setType(String type) {
         this.type = type;
     }
-    @ManyToOne(fetch = FetchType.LAZY, cascade= CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade=CascadeType.PERSIST)
     @JoinColumn(name = "sender_id")
     public User getSender() {
         return sender;
@@ -69,7 +71,7 @@ public class Message {
     public void setSender(User sender) {
         this.sender = sender;
     }
-    @ManyToOne(fetch = FetchType.LAZY, cascade= CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade=CascadeType.PERSIST)
     @JoinColumn(name = "recipient_id")
     public User getRecipient() {
         return recipient;

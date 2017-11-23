@@ -14,18 +14,16 @@ import java.util.List;
  * Created by douglas on 11/4/17.
  */
 public class PostDb {
-    private EntityManager entityManager;
-
 
     public boolean createPost(String Content, String title, Date date, long userId){
         Post post=null;
-        entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             entityManager.getTransaction().begin();
-             post =new Post();
-             post.setContent(Content);
-             post.setTitle(title);
-             post.setPublishDate(date);
+            post =new Post();
+            post.setContent(Content);
+            post.setTitle(title);
+            post.setPublishDate(date);
             User creator = (User) entityManager.find(User.class,userId);
             post.setCreator(creator);
             entityManager.persist(post);
@@ -42,7 +40,7 @@ public class PostDb {
     }
 
     public List<Post> getPostsByOwnerId(long ownerid){
-        entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         List<Post> posts=null;
         try {
             posts = entityManager.createNamedQuery("Post.FindPostBycreatorId").setParameter("id",ownerid).getResultList();

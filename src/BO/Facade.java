@@ -27,8 +27,6 @@ public class Facade {
     private static PostDb postDb = new PostDb();
 
 
-
-
     /**
      *this method creats a new user
      * @param name user's name
@@ -40,8 +38,8 @@ public class Facade {
     @Path("createUser")
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public static String  createUser(@FormParam("name") String name, @FormParam("email") String email,@FormParam("password") String password){
-        return String.valueOf( userDb.createUser(name,email,password));
+    public static String  createUser(@FormParam("name") String name, @FormParam("email") String email,@FormParam("password") String password,Date date){
+        return String.valueOf( userDb.createUser(name,email,password,date));
     }
 
     /**
@@ -181,7 +179,7 @@ public class Facade {
         List<Message> messages =messageDb.getMessagesByUserId(id);
         LinkedList<MessageViewModel>  messageVMs=new LinkedList<>();
         for (Message m: messages) {
-            messageVMs.add(new MessageViewModel(m.getId(),m.getContent(),m.getDate().toString()));
+            messageVMs.add(new MessageViewModel(m.getContent(),m.getDate(),m.getId(),getUserObjectById(id)));
         }
         return gson.toJson(messageVMs);
     }
@@ -189,7 +187,6 @@ public class Facade {
     @Path("messageByEmail/{email}")
     @Produces(MediaType.APPLICATION_JSON)
     public static String getUserIdByEmail(@PathParam("email") String email){
-
         return new Gson().toJson(userDb.getUserIdByEmail(email));}
 
     /**
@@ -204,7 +201,6 @@ public class Facade {
     @Path("createPost")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-
     public static  String createPost(@FormParam("content")String Content , @FormParam("title")String title, @FormParam("date")Date date, @FormParam("creatorId")long creatorId){
         Gson gson =new Gson();
         return gson.toJson(postDb.createPost(Content,title,date,creatorId));
@@ -220,14 +216,132 @@ public class Facade {
     @Produces(MediaType.APPLICATION_JSON)
     public static  String getPostsByOwnerId(@PathParam("id") long id){
         Gson gson = new Gson();
+
         LinkedList<PostViewModel> posts = new LinkedList<>();
-        //try {
+        try {
             for (Post p : postDb.getPostsByOwnerId(id)) {
-                posts.add(new PostViewModel(p.getTitle(), p.getContent(), p.getPublishDate()));
+                posts.add(0,new PostViewModel(p.getId(),p.getTitle(), p.getContent(), p.getPublishDate(),getUserObjectById(id)));
             }
-        //}catch(NullPointerException e){
-          //  System.out.println("NULLPOINTER EXCEPTION");
-        //}
+        }catch(NullPointerException e){
+            System.out.println("NULLPOINTER EXCEPTION");
+        }
         return gson.toJson(posts);
+    }
+
+    /**
+     * this method returns the chat history between two persons
+     * @param id person one
+     * @param id2 person two
+     * @return list of message objects
+     */
+    @GET
+    @Path("chatHistory/{id}/{id2}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public static String getChatHistory(long id, long id2){
+        Gson gson = new Gson();
+        LinkedList<MessageViewModel> messages = new LinkedList<>();
+        try {
+            for (Message m : messageDb.getChatHistory(id, id2)) {
+                messages.add(0,new MessageViewModel(m.getContent(), m.getDate(), m.getId(),
+                        getUserObjectById(m.getSender().getId())
+                ));
+            }
+            for (Message m : messageDb.getChatHistory(id2, id)) {
+                messages.add(0,new MessageViewModel(m.getContent(), m.getDate(), m.getId(),
+                        getUserObjectById(m.getSender().getId())
+                ));
+            }
+            messages.sort(MessageViewModel::compareTo);
+
+        }catch(NullPointerException e){
+            System.out.println("66666666666666666666666666");
+        }
+        return gson.toJson(messages);
+    }
+    /**
+     * this method returns all posts from a persons friendslist
+     * @param myId person one
+     * @return list of post objects
+     */
+    @GET
+    @Path("AllFriendsPosts/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public static String getAllFriendsPosts(long myId){
+        Gson gson = new Gson();
+        LinkedList<PostViewModel> posts = new LinkedList<>();
+        for(UserViewModel u:Facade.getFriendListObject(myId)){
+            for(PostViewModel p:Facade.getPostsByOwnerIdObject(u.getId())){
+                posts.add(p);
+            }
+        }
+        posts.sort(PostViewModel::compareTo);
+        return gson.toJson(posts);
+    }
+    /**
+     * used to see if the current user is friends with the person which profile the user is on
+     * @param friendId person one
+     * @param myId person one
+     * @return list of post objects
+     */
+    @GET
+    @Path("AllFriendsPosts/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public static boolean areFriends(long friendId, long myId){
+        try {
+            for (UserViewModel u : Facade.getFriendListObject(friendId)) {
+                if (u.getId() == myId) {
+                    return true;
+                }
+            }
+        }catch(NullPointerException e){
+
+        }
+        return false;
+    }
+
+
+
+
+
+    /**
+     * gets a UserViewModel object created where needed
+     * @param id target user id
+     * @return a userViewModel object
+     */
+    private static UserViewModel getUserObjectById(long id){
+        User user = userDb.getUserById(id);
+        return new UserViewModel(user.getName(),user.getBirthday().toString(),user.getId());
+    }
+    /**
+     * gets a UserViewModel object created where needed
+     * @param listOwnerId target user id
+     * @return list of post objects
+     */
+    private static LinkedList<UserViewModel> getFriendListObject(long listOwnerId){
+        LinkedList<UserViewModel> friends = new LinkedList<>();
+        try{
+            for(User p : userDb.getFriendList(listOwnerId)){
+                friends.add(new UserViewModel(p.getName(),p.getEmail(),p.getId()));
+            }
+        }catch(NullPointerException e){
+            System.out.println("NULLPOINTER EXCEPTION");
+        }
+        return friends;
+    }
+    /**
+     * gets a list of PostViewModels where needed
+     * @param id post owner
+     * @return list of post objects
+     */
+    private static LinkedList<PostViewModel> getPostsByOwnerIdObject(long id){
+        LinkedList<PostViewModel> posts = new LinkedList<>();
+        try {
+            for (Post p : postDb.getPostsByOwnerId(id)) {
+                posts.add(0,new PostViewModel(p.getId(),p.getTitle(), p.getContent(), p.getPublishDate(),getUserObjectById(id)));
+            }
+        }catch(NullPointerException e){
+            System.out.println("NULLPOINTER EXCEPTION");
+        }
+        return posts;
     }
 }

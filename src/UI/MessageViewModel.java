@@ -1,18 +1,19 @@
 package UI;
 
+import java.util.Date;
 
-/**
- * Created by douglas on 11/23/17.
- */
-public class MessageViewModel {
-    private long id ;
-    private String Content;
-    private String date;
+public class MessageViewModel implements Comparable<MessageViewModel> {
 
-    public MessageViewModel(long id, String content, String date) {
+    private String content;
+    private Date date;
+    private long id;
+    private UserViewModel owner;
+
+    public MessageViewModel(String cont,Date dat,long id,UserViewModel send){
+        this.content = cont;
+        date = dat;
         this.id = id;
-        Content = content;
-        this.date = date;
+        this.owner = send;
     }
 
     public long getId() {
@@ -23,19 +24,36 @@ public class MessageViewModel {
         this.id = id;
     }
 
-    public String getContent() {
-        return Content;
-    }
-
-    public void setContent(String content) {
-        Content = content;
-    }
-
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    @Override
+    public int compareTo(MessageViewModel o) {
+        if(o.getId()>this.id){
+            return 1;
+        }else if(o.getId()<this.id){
+            return -1;
+        }else return 0;
+    }
+
+    public UserViewModel getOwner() {
+        return owner;
+    }
+
+    public void setOwner(UserViewModel owner) {
+        this.owner = owner;
     }
 }

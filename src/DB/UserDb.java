@@ -1,27 +1,27 @@
 package DB;
 
 import BO.User;
+import org.hibernate.PersistentObjectException;
+import org.hibernate.Session;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.persistence.*;
+import java.sql.*;
+import java.util.*;
+import java.util.Date;
 
 /**
  * Created by douglas on 11/4/17.
  */
 public class UserDb {
-    private EntityManager entityManager;
 
-    public boolean createUser(String name, String email, String password){
-        entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+    public boolean createUser(String name, String email, String password,Date date){
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             User user = new User();
             user.setName(name);
             user.setEmail(email);
             user.setPassword(password);
+            user.setBirthday(date);
             entityManager.getTransaction().begin();
             entityManager.persist(user);
 
@@ -38,8 +38,8 @@ public class UserDb {
         }
     }
 
-    public User checkLogin(String email , String password) {
-        entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+    public User checkLogin(String email ,String password) {
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         User currentUser=null;
         try {
             currentUser = (User) entityManager.createNamedQuery("User.CheckLogin")
@@ -59,26 +59,83 @@ public class UserDb {
 
     }
     public  Boolean removeFriend(long userId,long friendId){
-        entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/socialdb","root","admin");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            PreparedStatement preparedStatement = conn.prepareStatement("DELETE FROM friend_list WHERE list_owner_id=? and friend_id=?");
+            preparedStatement.setLong(1,userId);
+            preparedStatement.setLong(2,friendId);
+            preparedStatement.executeUpdate();
+            preparedStatement = conn.prepareStatement("DELETE FROM friend_list WHERE list_owner_id=? and friend_id=?");
+            preparedStatement.setLong(1,friendId);
+            preparedStatement.setLong(2,userId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }finally{
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+       /* if(userId==friendId){
+            return false;
+        }
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         User user=  entityManager.find(User.class,userId);
         User friend = entityManager.find(User.class,friendId);
         user.removeFriend(friend);
         friend.removeFriend(user);
-        return UpdateFriedList(user ,friend);
+        return true;*/
+        return true;
     }
+
     public boolean addFriend(long userId, long friendId) {
-        if(userId==friendId){
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/socialdb","root","admin");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO friend_list (list_owner_id,friend_id) VALUES (?,?)");
+            preparedStatement.setLong(1,userId);
+            preparedStatement.setLong(2,friendId);
+            preparedStatement.executeUpdate();
+            preparedStatement = conn.prepareStatement("INSERT INTO friend_list (list_owner_id,friend_id) VALUES (?,?)");
+            preparedStatement.setLong(1,friendId);
+            preparedStatement.setLong(2,userId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }finally{
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        /*if(userId==friendId){
             return false;
         }
-        entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         User user = entityManager.find(User.class, userId);
         User friend = entityManager.find(User.class, friendId);
         user.addFriend(friend);
-        friend.addFriend(user);
-        return UpdateFriedList(user, friend);
+        friend.addFriend(user);*/
+        return true;
     }
 
     private boolean UpdateFriedList(User user, User friend){
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         try{
             entityManager.getTransaction().begin();
             entityManager.merge(friend);
@@ -86,6 +143,7 @@ public class UserDb {
             entityManager.getTransaction().commit();
         } catch (PersistenceException e){
             entityManager.getTransaction().rollback();
+            e.printStackTrace();
             return false;
         }finally {
             entityManager.close();
@@ -93,16 +151,16 @@ public class UserDb {
         return true;
     }
 
-
     public User getUserById(long id){
-        entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         User user = (User) entityManager.createNamedQuery("User.FindUserById").setParameter("id",id).getSingleResult();
         entityManager.close();
         return user;
     }
 
-   /* public List<User> getUsersByName(String name){
+    /*public List<User> getUsersByName(String name){
         List<User> users = null;
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             entityManager.getTransaction().begin();
             users=(List<User>) entityManager.createNamedQuery("User.FindUsersByName").setParameter("name",name).getResultList();
@@ -116,7 +174,7 @@ public class UserDb {
     }*/
 
     public Map<String,Long> getUsers(){
-        entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         List<User> users = null;
         List<Object[]> objects;
         try {
@@ -136,10 +194,10 @@ public class UserDb {
 
 
     public List<User> getFriendList(long id){
-        entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         List<User> friendList =null;
         try {
-             friendList = entityManager.createNamedQuery("User.FindFriendsByUserId").setParameter("id",id).getResultList();
+            friendList = entityManager.createNamedQuery("User.FindFriendsByUserId").setParameter("id",id).getResultList();
         }catch (Exception e){
             System.out.println("some error");
         }finally {
@@ -150,7 +208,11 @@ public class UserDb {
     }
 
     public long getUserIdByEmail(String email){
-        return (long) entityManager.createNamedQuery("User.FindUserIdByEmail").setParameter("email",email).getSingleResult();
+        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        long returnVal = (long) entityManager.createNamedQuery("User.FindUserIdByEmail").setParameter("email",email).getSingleResult();
+        entityManager.close();
+        return returnVal;
     }
 
 }
+

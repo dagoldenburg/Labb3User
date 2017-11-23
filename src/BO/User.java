@@ -1,5 +1,6 @@
 package BO;
 
+import javax.jws.soap.SOAPBinding;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
@@ -112,9 +113,9 @@ public class User {
         SenderMesg = senderMesg;
     }
 
-   @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable( name = "friend_list",joinColumns=@JoinColumn(name ="list_owner_id",referencedColumnName = "id"),
-    inverseJoinColumns = @JoinColumn(name="friend_id",referencedColumnName = "id"))
+            inverseJoinColumns = @JoinColumn(name="friend_id",referencedColumnName = "id"))
     public List<User> getFriendList() {
         return friendList;
     }
