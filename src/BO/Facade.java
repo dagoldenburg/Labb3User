@@ -277,31 +277,6 @@ public class Facade {
         posts.sort(PostViewModel::compareTo);
         return gson.toJson(posts);
     }
-    /**
-     * used to see if the current user is friends with the person which profile the user is on
-     * @param friendId person one
-     * @param myId person one
-     * @return list of post objects
-     */
-    @GET
-    @Path("AllFriendsPosts/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public static boolean areFriends(long friendId, long myId){
-        try {
-            for (UserViewModel u : Facade.getFriendListObject(friendId)) {
-                if (u.getId() == myId) {
-                    return true;
-                }
-            }
-        }catch(NullPointerException e){
-
-        }
-        return false;
-    }
-
-
-
-
 
     /**
      * gets a UserViewModel object created where needed
