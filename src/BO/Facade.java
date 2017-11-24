@@ -202,9 +202,9 @@ public class Facade {
     @Path("createPost")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public static  String createPost(@FormParam("content")String Content , @FormParam("title")String title, @FormParam("date")Date date, @FormParam("creatorId")long creatorId){
+    public static  String createPost(@FormParam("content")String Content , @FormParam("title")String title, @FormParam("date")String date, @FormParam("creatorId")String creatorId){
         Gson gson =new Gson();
-        return gson.toJson(postDb.createPost(Content,title,date,creatorId));
+        return gson.toJson(postDb.createPost(Content,title,new Date(),Long.parseLong(creatorId)));
     }
 
     /**
