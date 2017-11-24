@@ -28,7 +28,6 @@ public class PostDb {
             post.setCreator(creator);
             entityManager.persist(post);
             entityManager.getTransaction().commit();
-
         }catch (PersistenceException e){
             entityManager.getTransaction().rollback();
             e.printStackTrace();

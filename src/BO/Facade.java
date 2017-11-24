@@ -93,8 +93,9 @@ public class Facade {
         Gson gson =new Gson();
         User user = userDb.getUserById(id);
 
-
-        return gson.toJson(new UserViewModel(user.getName(),user.getBirthday().toString(),user.getId()));
+        UserViewModel uvm = new UserViewModel("hej","123",1);
+       // return gson.toJson(new UserViewModel(user.getName(),user.getBirthday().toString(),user.getId()));
+        return gson.toJson(uvm);
     }
 
     /**
@@ -237,7 +238,7 @@ public class Facade {
     @GET
     @Path("chatHistory/{id}/{id2}")
     @Produces(MediaType.APPLICATION_JSON)
-    public static String getChatHistory(long id, long id2){
+    public static String getChatHistory(@PathParam("id")long id,@PathParam("id2") long id2){
         Gson gson = new Gson();
         LinkedList<MessageViewModel> messages = new LinkedList<>();
         try {
@@ -266,7 +267,7 @@ public class Facade {
     @GET
     @Path("AllFriendsPosts/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public static String getAllFriendsPosts(long myId){
+    public static String getAllFriendsPosts(@PathParam("id")long myId){
         Gson gson = new Gson();
         LinkedList<PostViewModel> posts = new LinkedList<>();
         for(UserViewModel u:Facade.getFriendListObject(myId)){
