@@ -41,7 +41,6 @@ public class Facade {
     public static String  createUser(@FormParam("name") String name, @FormParam("email") String email,@FormParam("password") String password,Date date){
         return String.valueOf( userDb.createUser(name,email,password,date));
     }
-
     /**
      * this method check if person tries to login has a account
      * @param email email from login form
@@ -162,7 +161,11 @@ public class Facade {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 
-    public static String createMessage(@FormParam("content")String content, @FormParam("date")Date date, @FormParam("type")String type,@FormParam("sendId") long senderId,@FormParam("recipientId") long  recipientId){
+    public static String createMessage(@FormParam("content")String content,
+                                       @FormParam("date")Date date,
+                                       @FormParam("type")String type,
+                                       @FormParam("sendId") long senderId,
+                                       @FormParam("recipientId") long  recipientId){
         Gson gson = new Gson();
         return gson.toJson(messageDb.createMessage(content,date,type,senderId,recipientId));
     }
@@ -202,7 +205,10 @@ public class Facade {
     @Path("createPost")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public static  String createPost(@FormParam("content")String Content , @FormParam("title")String title, @FormParam("date")Date date, @FormParam("creatorId")long creatorId){
+    public static  String createPost(@FormParam("content")String Content ,
+                                     @FormParam("title")String title,
+                                     @FormParam("date")Date date,
+                                     @FormParam("creatorId")long creatorId){
         Gson gson =new Gson();
         return gson.toJson(postDb.createPost(Content,title,date,creatorId));
     }
