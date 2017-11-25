@@ -3,8 +3,8 @@ package DB;
 
 import BO.Post;
 import BO.User;
-import org.hibernate.Session;
 
+import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import java.util.Date;
@@ -17,36 +17,36 @@ public class PostDb {
 
     public boolean createPost(String Content, String title, Date date, long userId){
         Post post=null;
-        Session sess = JPAUtil.getSession();
+        EntityManager entityManager = JPAUtil.getEntityManager();
         try {
-            sess.getTransaction().begin();
+            entityManager.getTransaction().begin();
             post =new Post();
             post.setContent(Content);
             post.setTitle(title);
             post.setPublishDate(date);
-            User creator = (User) sess.find(User.class,userId);
+            User creator = (User) entityManager.find(User.class,userId);
             post.setCreator(creator);
-            sess.persist(post);
-            sess.getTransaction().commit();
+            entityManager.persist(post);
+            entityManager.getTransaction().commit();
         }catch (PersistenceException e){
-            sess.getTransaction().rollback();
+            entityManager.getTransaction().rollback();
             e.printStackTrace();
             return  false;
         }finally {
-            sess.close();
+            entityManager.close();
         }
         return true;
     }
 
     public List<Post> getPostsByOwnerId(long ownerid){
-        Session sess = JPAUtil.getSession();
+        EntityManager entityManager = JPAUtil.getEntityManager();
         List<Post> posts=null;
         try {
-            posts = sess.createNamedQuery("Post.FindPostBycreatorId").setParameter("id",ownerid).getResultList();
+            posts = entityManager.createNamedQuery("Post.FindPostBycreatorId").setParameter("id",ownerid).getResultList();
         }catch (NoResultException e){
             System.out.println("No result");
         }finally {
-            sess.close();
+            entityManager.close();
         }
         return posts;
     }

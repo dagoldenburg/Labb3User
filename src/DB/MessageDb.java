@@ -2,8 +2,8 @@ package DB;
 
 import BO.Message;
 import BO.User;
-import org.hibernate.Session;
 
+import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import java.util.Date;
@@ -19,33 +19,33 @@ public class MessageDb {
     public Message createMessage(String Content,Date date, String type, long senderId, long  recipientId){
 
         Message message = null;
-        Session sess = JPAUtil.getSession();
+        EntityManager entityManager = JPAUtil.getEntityManager();
         try {
-            sess.getTransaction().begin();
+            entityManager.getTransaction().begin();
             message=new Message();
             message.setContent(Content);
             message.setType(type);
             message.setDate(date);
-            User sender = (User) sess.find(User.class, senderId);
-            User recipient = (User) sess.find(User.class,  recipientId);
+            User sender = (User) entityManager.find(User.class, senderId);
+            User recipient = (User) entityManager.find(User.class,  recipientId);
             message.setSender(sender);
             message.setRecipient(recipient);
 
 
 
-            sess.persist(message);
-            sess.getTransaction().commit();
+            entityManager.persist(message);
+            entityManager.getTransaction().commit();
         }catch (NoResultException e2){
-            sess.getTransaction().rollback();
+            entityManager.getTransaction().rollback();
             System.out.println("Users Not Found");
         }catch (PersistenceException e) {
 
             System.out.println("Cant not save message");
-            sess.getTransaction().rollback();
+            entityManager.getTransaction().rollback();
 
 
         }finally {
-            sess.close();
+            entityManager.close();
         }
         return message;
 
@@ -53,19 +53,19 @@ public class MessageDb {
 
     public List<Message> getMessagesByUserId(long id){
         List<Message> listOfmessage= null;
-        Session sess = JPAUtil.getSession();
+        EntityManager entityManager = JPAUtil.getEntityManager();
 
         try {
-            sess.getTransaction().begin();
+            entityManager.getTransaction().begin();
 
-            listOfmessage=  sess.createNamedQuery("Message.FindMessgesByRecipient").setParameter("id",id).getResultList();
+            listOfmessage=  entityManager.createNamedQuery("Message.FindMessgesByRecipient").setParameter("id",id).getResultList();
 
-            sess.getTransaction().commit();
+            entityManager.getTransaction().commit();
 
         }catch (NoResultException e){
-            sess.getTransaction().rollback();
+            entityManager.getTransaction().rollback();
         }finally {
-            sess.close();
+            entityManager.close();
         }
         return  listOfmessage;
     }
@@ -73,19 +73,19 @@ public class MessageDb {
 
     public List<Message> getChatHistory(long id,long id2){
         List<Message> listOfmessage= null;
-        Session sess = JPAUtil.getSession();
+        EntityManager entityManager = JPAUtil.getEntityManager();
 
         try {
-            sess.getTransaction().begin();
+            entityManager.getTransaction().begin();
 
-            listOfmessage=  sess.createNamedQuery("Message.FindMessgesByRecipientAndSender")
+            listOfmessage=  entityManager.createNamedQuery("Message.FindMessgesByRecipientAndSender")
                     .setParameter("id",id).setParameter("id2",id2).getResultList();
-            sess.getTransaction().commit();
+            entityManager.getTransaction().commit();
 
         }catch (NoResultException e){
-            sess.getTransaction().rollback();
+            entityManager.getTransaction().rollback();
         }finally {
-            sess.close();
+            entityManager.close();
         }
         return  listOfmessage;
     }
