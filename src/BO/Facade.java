@@ -38,8 +38,8 @@ public class Facade {
     @Path("createUser")
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public static String  createUser(@FormParam("name") String name, @FormParam("email") String email,@FormParam("password") String password,Date date){
-        return String.valueOf( userDb.createUser(name,email,password,date));
+    public static String  createUser(@FormParam("name") String name, @FormParam("email") String email,@FormParam("password") String password,@FormParam("date")String date){
+        return String.valueOf( userDb.createUser(name,email,password,new Date()));
     }
 
     /**
@@ -89,13 +89,11 @@ public class Facade {
     @GET
     @Path("user/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public static String getUserById(@PathParam("id") long id){
+    public static String getUserById(@PathParam("id") String id){
         Gson gson =new Gson();
-        User user = userDb.getUserById(id);
+        User user = userDb.getUserById(Long.parseLong(id));
 
-        UserViewModel uvm = new UserViewModel("hej","123",1);
-       // return gson.toJson(new UserViewModel(user.getName(),user.getBirthday().toString(),user.getId()));
-        return gson.toJson(uvm);
+        return gson.toJson(new UserViewModel(user.getName(),user.getBirthday().toString(),user.getId()));
     }
 
     /**
@@ -106,12 +104,12 @@ public class Facade {
     @GET
     @Path("friendList/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public static String getFriendList(@PathParam("id") long listOwnerId){
+    public static String getFriendList(@PathParam("id") String listOwnerId){
         Gson gson =new Gson();
 
         LinkedList<UserViewModel> friends = new LinkedList<>();
         try{
-            for(User p : userDb.getFriendList(listOwnerId)){
+            for(User p : userDb.getFriendList(Long.parseLong(listOwnerId))){
                 friends.add(new UserViewModel(p.getName(),p.getEmail(),p.getId()));
             }
         }catch(NullPointerException e){
@@ -130,8 +128,8 @@ public class Facade {
     @Path("addFriend")
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public static String addFriend(@FormParam("ownerId") long listOwnerId ,@FormParam("friendId") long friendId){
-        return  String.valueOf(userDb.addFriend(listOwnerId,friendId));
+    public static String addFriend(@FormParam("ownerId") String listOwnerId ,@FormParam("friendId") String friendId){
+        return  String.valueOf(userDb.addFriend(Long.parseLong(listOwnerId),Long.parseLong(friendId)));
     }
     /**
      * This metod tries to remove a friend to current user's friend list
@@ -144,8 +142,8 @@ public class Facade {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 
-    public static String removeFriend(@FormParam("ownerId") long listOwnerId ,@FormParam("friendId") long friendId){
-        return  String.valueOf(userDb.removeFriend(listOwnerId,friendId));
+    public static String removeFriend(@FormParam("ownerId") String listOwnerId ,@FormParam("friendId") String friendId){
+        return  String.valueOf(userDb.removeFriend(Long.parseLong(listOwnerId),Long.parseLong(friendId)));
     }
 
     /**
@@ -162,9 +160,11 @@ public class Facade {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 
-    public static String createMessage(@FormParam("content")String content, @FormParam("date")Date date, @FormParam("type")String type,@FormParam("sendId") long senderId,@FormParam("recipientId") long  recipientId){
+    public static String createMessage(@FormParam("content")String content,
+                                       @FormParam("date")String date, @FormParam("type")String type,
+                                       @FormParam("sendId") String senderId,@FormParam("recipientId") String  recipientId){
         Gson gson = new Gson();
-        return gson.toJson(messageDb.createMessage(content,date,type,senderId,recipientId));
+        return gson.toJson(messageDb.createMessage(content,new Date(),type,Long.parseLong(senderId),Long.parseLong(recipientId)));
     }
 
     /**
@@ -175,12 +175,13 @@ public class Facade {
     @GET
     @Path("messageByUser/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public  static String  getMessageByUserId(@PathParam("id")long id){
+    public  static String  getMessageByUserId(@PathParam("id")String id){
         Gson gson = new Gson();
-        List<Message> messages =messageDb.getMessagesByUserId(id);
+        List<Message> messages =messageDb.getMessagesByUserId(Long.parseLong(id));
         LinkedList<MessageViewModel>  messageVMs=new LinkedList<>();
         for (Message m: messages) {
-            messageVMs.add(new MessageViewModel(m.getContent(),m.getDate(),m.getId(),getUserObjectById(id)));
+            messageVMs.add(new MessageViewModel(m.getContent(),m.getDate(),m.getId(),
+                    getUserObjectById(Long.parseLong(id))));
         }
         return gson.toJson(messageVMs);
     }
@@ -202,7 +203,9 @@ public class Facade {
     @Path("createPost")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public static  String createPost(@FormParam("content")String Content , @FormParam("title")String title, @FormParam("date")String date, @FormParam("creatorId")String creatorId){
+    public static  String createPost(@FormParam("content")String Content ,
+                                     @FormParam("title")String title,
+                                     @FormParam("date")String date, @FormParam("creatorId")String creatorId){
         Gson gson =new Gson();
         return gson.toJson(postDb.createPost(Content,title,new Date(),Long.parseLong(creatorId)));
     }
@@ -215,13 +218,14 @@ public class Facade {
     @GET
     @Path("postByOwner/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public static  String getPostsByOwnerId(@PathParam("id") long id){
+    public static  String getPostsByOwnerId(@PathParam("id") String id){
         Gson gson = new Gson();
 
         LinkedList<PostViewModel> posts = new LinkedList<>();
         try {
-            for (Post p : postDb.getPostsByOwnerId(id)) {
-                posts.add(0,new PostViewModel(p.getId(),p.getTitle(), p.getContent(), p.getPublishDate(),getUserObjectById(id)));
+            for (Post p : postDb.getPostsByOwnerId(Long.parseLong(id))) {
+                posts.add(0,new PostViewModel(p.getId(),p.getTitle(), p.getContent(), p.getPublishDate(),
+                        getUserObjectById(Long.parseLong(id))));
             }
         }catch(NullPointerException e){
             System.out.println("NULLPOINTER EXCEPTION");
@@ -238,16 +242,16 @@ public class Facade {
     @GET
     @Path("chatHistory/{id}/{id2}")
     @Produces(MediaType.APPLICATION_JSON)
-    public static String getChatHistory(@PathParam("id")long id,@PathParam("id2") long id2){
+    public static String getChatHistory(@PathParam("id")String id,@PathParam("id2") String id2){
         Gson gson = new Gson();
         LinkedList<MessageViewModel> messages = new LinkedList<>();
         try {
-            for (Message m : messageDb.getChatHistory(id, id2)) {
+            for (Message m : messageDb.getChatHistory(Long.parseLong(id), Long.parseLong(id2))) {
                 messages.add(0,new MessageViewModel(m.getContent(), m.getDate(), m.getId(),
                         getUserObjectById(m.getSender().getId())
                 ));
             }
-            for (Message m : messageDb.getChatHistory(id2, id)) {
+            for (Message m : messageDb.getChatHistory(Long.parseLong(id2), Long.parseLong(id))) {
                 messages.add(0,new MessageViewModel(m.getContent(), m.getDate(), m.getId(),
                         getUserObjectById(m.getSender().getId())
                 ));
@@ -267,10 +271,10 @@ public class Facade {
     @GET
     @Path("AllFriendsPosts/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public static String getAllFriendsPosts(@PathParam("id")long myId){
+    public static String getAllFriendsPosts(@PathParam("id")String myId){
         Gson gson = new Gson();
         LinkedList<PostViewModel> posts = new LinkedList<>();
-        for(UserViewModel u:Facade.getFriendListObject(myId)){
+        for(UserViewModel u:Facade.getFriendListObject(Long.parseLong(myId))){
             for(PostViewModel p:Facade.getPostsByOwnerIdObject(u.getId())){
                 posts.add(p);
             }
