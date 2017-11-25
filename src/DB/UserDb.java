@@ -15,34 +15,35 @@ import java.util.Date;
 public class UserDb {
 
     public boolean createUser(String name, String email, String password,Date date){
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        Session sess = JPAUtil.getSession();
         try {
             User user = new User();
             user.setName(name);
             user.setEmail(email);
             user.setPassword(password);
             user.setBirthday(date);
-            entityManager.getTransaction().begin();
-            entityManager.persist(user);
+            
+            sess.getTransaction().begin();
+            sess.persist(user);
 
-            entityManager.getTransaction().commit();
+            sess.getTransaction().commit();
             return true;
         }catch (PersistenceException e){
             System.out.println("Transaction aborted");
 
-            entityManager.getTransaction().rollback();
+            sess.getTransaction().rollback();
             return false;
         }finally {
-            entityManager.close();
+            sess.close();
             return true;
         }
     }
 
     public User checkLogin(String email ,String password) {
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        Session sess = JPAUtil.getSession();
         User currentUser=null;
         try {
-            currentUser = (User) entityManager.createNamedQuery("User.CheckLogin")
+            currentUser = (User) sess.createNamedQuery("User.CheckLogin")
                     .setParameter("email", email)
                     .setParameter("password", password).getSingleResult();
         }catch (NoResultException e0){
@@ -53,7 +54,7 @@ public class UserDb {
             return null;
 
         } finally {
-            entityManager.close();
+            sess.close();
         }
         return currentUser;
 
@@ -87,9 +88,9 @@ public class UserDb {
        /* if(userId==friendId){
             return false;
         }
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
-        User user=  entityManager.find(User.class,userId);
-        User friend = entityManager.find(User.class,friendId);
+        Session sess = JPAUtil.getSession();
+        User user=  sess.find(User.class,userId);
+        User friend = sess.find(User.class,friendId);
         user.removeFriend(friend);
         friend.removeFriend(user);
         return true;*/
@@ -126,59 +127,59 @@ public class UserDb {
         /*if(userId==friendId){
             return false;
         }
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
-        User user = entityManager.find(User.class, userId);
-        User friend = entityManager.find(User.class, friendId);
+        Session sess = JPAUtil.getSession();
+        User user = sess.find(User.class, userId);
+        User friend = sess.find(User.class, friendId);
         user.addFriend(friend);
         friend.addFriend(user);*/
         return true;
     }
 
     private boolean UpdateFriedList(User user, User friend){
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        Session sess = JPAUtil.getSession();
         try{
-            entityManager.getTransaction().begin();
-            entityManager.merge(friend);
-            entityManager.merge(user);
-            entityManager.getTransaction().commit();
+            sess.getTransaction().begin();
+            sess.merge(friend);
+            sess.merge(user);
+            sess.getTransaction().commit();
         } catch (PersistenceException e){
-            entityManager.getTransaction().rollback();
+            sess.getTransaction().rollback();
             e.printStackTrace();
             return false;
         }finally {
-            entityManager.close();
+            sess.close();
         }
         return true;
     }
 
     public User getUserById(long id){
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
-        User user = (User) entityManager.createNamedQuery("User.FindUserById").setParameter("id",id).getSingleResult();
-        entityManager.close();
+        Session sess = JPAUtil.getSession();
+        User user = (User) sess.createNamedQuery("User.FindUserById").setParameter("id",id).getSingleResult();
+        sess.close();
         return user;
     }
 
     /*public List<User> getUsersByName(String name){
         List<User> users = null;
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        Session sess = JPAUtil.getSession();
         try {
-            entityManager.getTransaction().begin();
-            users=(List<User>) entityManager.createNamedQuery("User.FindUsersByName").setParameter("name",name).getResultList();
-            entityManager.getTransaction().commit();
+            sess.getTransaction().begin();
+            users=(List<User>) sess.createNamedQuery("User.FindUsersByName").setParameter("name",name).getResultList();
+            sess.getTransaction().commit();
         }catch (PersistenceException e){
-            entityManager.getTransaction().rollback();
+            sess.getTransaction().rollback();
         }finally {
-            entityManager.close();
+            sess.close();
         }
         return users;
     }*/
 
     public Map<String,Long> getUsers(){
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        Session sess = JPAUtil.getSession();
         List<User> users = null;
         List<Object[]> objects;
         try {
-            objects= entityManager.createNamedQuery("User.FindUsers").getResultList();
+            objects= sess.createNamedQuery("User.FindUsers").getResultList();
             Map<String,Long> resultList = new HashMap<>(objects.size());
             for (Object[] result:objects ) {
                 resultList.put((String) result[0],(long)result[1]);
@@ -186,7 +187,7 @@ public class UserDb {
 
             return resultList;
         }catch (PersistenceException e){
-            entityManager.close();
+            sess.close();
         }
         return null;
     }
@@ -194,23 +195,23 @@ public class UserDb {
 
 
     public List<User> getFriendList(long id){
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+        Session sess = JPAUtil.getSession();
         List<User> friendList =null;
         try {
-            friendList = entityManager.createNamedQuery("User.FindFriendsByUserId").setParameter("id",id).getResultList();
+            friendList = sess.createNamedQuery("User.FindFriendsByUserId").setParameter("id",id).getResultList();
         }catch (Exception e){
             System.out.println("some error");
         }finally {
-            entityManager.close();
+            sess.close();
 
         }
         return friendList;
     }
 
     public long getUserIdByEmail(String email){
-        EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
-        long returnVal = (long) entityManager.createNamedQuery("User.FindUserIdByEmail").setParameter("email",email).getSingleResult();
-        entityManager.close();
+        Session sess = JPAUtil.getSession();
+        long returnVal = (long) sess.createNamedQuery("User.FindUserIdByEmail").setParameter("email",email).getSingleResult();
+        sess.close();
         return returnVal;
     }
 
