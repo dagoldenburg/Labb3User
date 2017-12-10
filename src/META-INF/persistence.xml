@@ -3,8 +3,6 @@
 
     <persistence-unit name="NewPersistenceUnit">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>BO.Message</class>
-        <class>BO.Post</class>
         <class>BO.User</class>
         <properties>
             <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/SocialDb"/>

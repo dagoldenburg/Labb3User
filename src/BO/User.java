@@ -26,13 +26,6 @@ public class User {
     private String password;
     private Date birthday;
 
-    private List<Post> posts;
-
-
-    private List<Message> SenderMesg;
-    private List<Message> recepientMesg;
-
-
 
     private List<User> friendList;
     @Id
@@ -83,34 +76,6 @@ public class User {
 
     public void setBirthday(Date birthday) {
         this.birthday = birthday;
-    }
-
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "creator")
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
-    }
-
-
-    @OneToMany(mappedBy = "recipient")
-    public List<Message> getRecepientMesg() {
-        return recepientMesg;
-    }
-
-    public void setRecepientMesg(List<Message> recepientMesg) {
-        this.recepientMesg = recepientMesg;
-    }
-
-    @OneToMany(mappedBy = "sender")
-    public List<Message> getSenderMesg() {
-        return SenderMesg;
-    }
-
-    public void setSenderMesg(List<Message> senderMesg) {
-        SenderMesg = senderMesg;
     }
 
     @ManyToMany(fetch = FetchType.EAGER)
