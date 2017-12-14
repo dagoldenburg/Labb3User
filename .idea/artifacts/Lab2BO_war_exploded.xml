@@ -2,10 +2,10 @@
   <artifact type="exploded-war" name="Lab2BO:war exploded">
     <output-path>$PROJECT_DIR$/out/artifacts/Lab2BO_war_exploded</output-path>
     <root id="root">
-      <element id="javaee-facet-resources" facet="Lab2BO/web/Web" />
+      <element id="javaee-facet-resources" facet="Labb3User/web/Web" />
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
-          <element id="module-output" name="Lab2BO" />
+          <element id="module-output" name="Labb3User" />
         </element>
         <element id="directory" name="lib">
           <element id="library" level="project" name="Hibernate 5.2.12-5.2.12" />
