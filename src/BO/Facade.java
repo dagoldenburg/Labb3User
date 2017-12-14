@@ -137,29 +137,4 @@ public class Facade {
         return  String.valueOf(userDb.removeFriend(Long.parseLong(listOwnerId),Long.parseLong(friendId)));
     }
 
-    /**
-     * gets a BO.UserViewModel object created where needed
-     * @param id target user id
-     * @return a userViewModel object
-     */
-    private static UserViewModel getUserObjectById(long id){
-        User user = userDb.getUserById(id);
-        return new UserViewModel(user.getName(),user.getBirthday().toString(),user.getId());
-    }
-    /**
-     * gets a BO.UserViewModel object created where needed
-     * @param listOwnerId target user id
-     * @return list of post objects
-     */
-    private static LinkedList<UserViewModel> getFriendListObject(long listOwnerId){
-        LinkedList<UserViewModel> friends = new LinkedList<>();
-        try{
-            for(User p : userDb.getFriendList(listOwnerId)){
-                friends.add(new UserViewModel(p.getName(),p.getEmail(),p.getId()));
-            }
-        }catch(NullPointerException e){
-            System.out.println("NULLPOINTER EXCEPTION");
-        }
-        return friends;
-    }
 }
